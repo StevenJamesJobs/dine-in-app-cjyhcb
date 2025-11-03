@@ -10,6 +10,7 @@ import {
   Pressable,
   useColorScheme,
   Platform,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/IconSymbol';
@@ -55,9 +56,21 @@ export default function LoginScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* Logo Section */}
+        <View style={styles.logoContainer}>
+          <Image
+            source={{ uri: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=400&fit=crop' }}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={[styles.logoText, { color: colors.accent }]}>
+            McLoone&apos;s
+          </Text>
+        </View>
+
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text }]}>
-            Welcome to McLoone&apos;s
+            Welcome Back
           </Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
             Sign in to continue
@@ -237,8 +250,23 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
   },
-  header: {
+  logoContainer: {
+    alignItems: 'center',
     marginTop: 20,
+    marginBottom: 24,
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 12,
+  },
+  logoText: {
+    fontSize: 28,
+    fontWeight: '700',
+    letterSpacing: 1,
+  },
+  header: {
     marginBottom: 32,
   },
   title: {
