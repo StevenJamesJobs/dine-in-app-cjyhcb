@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { router } from 'expo-router';
 import {
   View,
   Text,
@@ -11,21 +12,18 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { IconSymbol } from '@/components/IconSymbol';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/button';
-import { IconSymbol } from '@/components/IconSymbol';
 import { restaurantColors } from '@/constants/Colors';
 
 export default function LoginScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const { login, loginWithGoogle } = useAuth();
-  
-  const [selectedRole, setSelectedRole] = useState<'customer' | 'employee'>('customer');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<'customer' | 'employee'>('customer');
+  const { login, loginWithGoogle } = useAuth();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
   const colors = restaurantColors[selectedRole][isDark ? 'dark' : 'light'];
 
@@ -34,178 +32,185 @@ export default function LoginScreen() {
       console.log('Please fill in all fields');
       return;
     }
-    setIsLoading(true);
     try {
       await login(email, password, selectedRole);
       router.replace('/(tabs)/(home)/');
     } catch (error) {
       console.log('Login error:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-    setIsLoading(true);
     try {
       await loginWithGoogle(selectedRole);
       router.replace('/(tabs)/(home)/');
     } catch (error) {
       console.log('Google login error:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Logo/Header */}
         <View style={styles.header}>
-          <IconSymbol 
-            name="fork.knife" 
-            size={60} 
-            color={colors.accent}
-          />
           <Text style={[styles.title, { color: colors.text }]}>
-            Restaurant App
+            Welcome to McLoone&apos;s
           </Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            Welcome back!
+            Sign in to continue
           </Text>
         </View>
 
         {/* Role Selection */}
         <View style={styles.roleContainer}>
-          <Pressable
-            style={[
-              styles.roleButton,
-              selectedRole === 'customer' && { 
-                backgroundColor: colors.accent,
-                borderColor: colors.accent,
-              },
-              { borderColor: colors.accentGray }
-            ]}
-            onPress={() => setSelectedRole('customer')}
-          >
-            <IconSymbol 
-              name="person.fill" 
-              size={24} 
-              color={selectedRole === 'customer' ? '#FFFFFF' : colors.textSecondary}
-            />
-            <Text style={[
-              styles.roleButtonText,
-              { color: selectedRole === 'customer' ? '#FFFFFF' : colors.textSecondary }
-            ]}>
-              Customer
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={[
-              styles.roleButton,
-              selectedRole === 'employee' && { 
-                backgroundColor: colors.accent,
-                borderColor: colors.accent,
-              },
-              { borderColor: colors.accentGray }
-            ]}
-            onPress={() => setSelectedRole('employee')}
-          >
-            <IconSymbol 
-              name="briefcase.fill" 
-              size={24} 
-              color={selectedRole === 'employee' ? '#FFFFFF' : colors.textSecondary}
-            />
-            <Text style={[
-              styles.roleButtonText,
-              { color: selectedRole === 'employee' ? '#FFFFFF' : colors.textSecondary }
-            ]}>
-              Employee
-            </Text>
-          </Pressable>
+          <Text style={[styles.roleLabel, { color: colors.textSecondary }]}>
+            I am a:
+          </Text>
+          <View style={styles.roleButtons}>
+            <Pressable
+              style={[
+                styles.roleButton,
+                { backgroundColor: colors.cardBackground },
+                selectedRole === 'customer' && { 
+                  backgroundColor: colors.accent,
+                },
+              ]}
+              onPress={() => setSelectedRole('customer')}
+            >
+              <IconSymbol 
+                name="person.fill" 
+                size={24} 
+                color={selectedRole === 'customer' ? '#FFFFFF' : colors.text} 
+              />
+              <Text
+                style={[
+                  styles.roleButtonText,
+                  { color: colors.text },
+                  selectedRole === 'customer' && { color: '#FFFFFF' },
+                ]}
+              >
+                Customer
+              </Text>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.roleButton,
+                { backgroundColor: colors.cardBackground },
+                selectedRole === 'employee' && { 
+                  backgroundColor: colors.accent,
+                },
+              ]}
+              onPress={() => setSelectedRole('employee')}
+            >
+              <IconSymbol 
+                name="briefcase.fill" 
+                size={24} 
+                color={selectedRole === 'employee' ? '#FFFFFF' : colors.text} 
+              />
+              <Text
+                style={[
+                  styles.roleButtonText,
+                  { color: colors.text },
+                  selectedRole === 'employee' && { color: '#FFFFFF' },
+                ]}
+              >
+                Employee
+              </Text>
+            </Pressable>
+          </View>
         </View>
 
         {/* Login Form */}
-        <View style={[styles.formContainer, { backgroundColor: colors.cardBackground }]}>
-          <Text style={[styles.formTitle, { color: colors.text }]}>
-            Sign in as {selectedRole}
-          </Text>
-
+        <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>Email</Text>
+            <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>
+              Email
+            </Text>
             <TextInput
-              style={[styles.input, { 
-                backgroundColor: colors.background,
-                color: colors.text,
-                borderColor: colors.accentGray,
-              }]}
-              placeholder="Enter your email"
+              style={[
+                styles.input,
+                { 
+                  backgroundColor: colors.cardBackground,
+                  color: colors.text,
+                  borderColor: colors.accentGray,
+                },
+              ]}
+              placeholder="your@email.com"
               placeholderTextColor={colors.textSecondary}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
-              autoComplete="email"
             />
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>Password</Text>
+            <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>
+              Password
+            </Text>
             <TextInput
-              style={[styles.input, { 
-                backgroundColor: colors.background,
-                color: colors.text,
-                borderColor: colors.accentGray,
-              }]}
-              placeholder="Enter your password"
+              style={[
+                styles.input,
+                { 
+                  backgroundColor: colors.cardBackground,
+                  color: colors.text,
+                  borderColor: colors.accentGray,
+                },
+              ]}
+              placeholder="••••••••"
               placeholderTextColor={colors.textSecondary}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
-              autoCapitalize="none"
-              autoComplete="password"
             />
           </View>
 
-          <Pressable style={styles.forgotPassword}>
-            <Text style={[styles.forgotPasswordText, { color: colors.accent }]}>
-              Forgot password?
-            </Text>
-          </Pressable>
+          {selectedRole === 'employee' && (
+            <View style={[styles.managerHint, { backgroundColor: colors.cardBackground }]}>
+              <IconSymbol name="info.circle.fill" size={16} color={colors.accent} />
+              <Text style={[styles.managerHintText, { color: colors.textSecondary }]}>
+                Tip: Include &quot;manager&quot; in your email to access management features
+              </Text>
+            </View>
+          )}
 
-          <Button
+          <Pressable
+            style={[styles.loginButton, { backgroundColor: colors.accent }]}
             onPress={handleLogin}
-            loading={isLoading}
-            style={{ 
-              backgroundColor: colors.accent,
-              marginTop: 8,
-            }}
-            textStyle={{ color: '#FFFFFF' }}
           >
-            Sign In
-          </Button>
+            <Text style={styles.loginButtonText}>Sign In</Text>
+          </Pressable>
 
           <View style={styles.divider}>
             <View style={[styles.dividerLine, { backgroundColor: colors.accentGray }]} />
-            <Text style={[styles.dividerText, { color: colors.textSecondary }]}>OR</Text>
+            <Text style={[styles.dividerText, { color: colors.textSecondary }]}>
+              or
+            </Text>
             <View style={[styles.dividerLine, { backgroundColor: colors.accentGray }]} />
           </View>
 
           <Pressable
-            style={[styles.googleButton, { 
-              borderColor: colors.accentGray,
-              backgroundColor: colors.background,
-            }]}
+            style={[
+              styles.googleButton,
+              { 
+                backgroundColor: colors.cardBackground,
+                borderColor: colors.accentGray,
+              },
+            ]}
             onPress={handleGoogleLogin}
-            disabled={isLoading}
           >
             <IconSymbol name="globe" size={20} color={colors.text} />
             <Text style={[styles.googleButtonText, { color: colors.text }]}>
               Continue with Google
+            </Text>
+          </Pressable>
+
+          <Pressable style={styles.forgotPassword}>
+            <Text style={[styles.forgotPasswordText, { color: colors.accent }]}>
+              Forgot password?
             </Text>
           </Pressable>
 
@@ -230,26 +235,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 24,
-    paddingTop: 40,
+    padding: 20,
   },
   header: {
-    alignItems: 'center',
+    marginTop: 20,
     marginBottom: 32,
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
-    marginTop: 16,
+    fontWeight: '700',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
   },
   roleContainer: {
+    marginBottom: 24,
+  },
+  roleLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  roleButtons: {
     flexDirection: 'row',
     gap: 12,
-    marginBottom: 24,
   },
   roleButton: {
     flex: 1,
@@ -258,74 +268,89 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 16,
     borderRadius: 12,
-    borderWidth: 2,
     gap: 8,
   },
   roleButtonText: {
     fontSize: 16,
     fontWeight: '600',
   },
-  formContainer: {
-    borderRadius: 16,
-    padding: 24,
-  },
-  formTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 20,
+  form: {
+    gap: 16,
   },
   inputContainer: {
-    marginBottom: 16,
+    gap: 8,
   },
-  label: {
+  inputLabel: {
     fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 8,
+    fontWeight: '600',
   },
   input: {
     borderWidth: 1,
     borderRadius: 8,
-    padding: 12,
+    padding: 14,
     fontSize: 16,
   },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginBottom: 16,
+  managerHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 12,
+    borderRadius: 8,
   },
-  forgotPasswordText: {
-    fontSize: 14,
-    fontWeight: '500',
+  managerHintText: {
+    fontSize: 12,
+    flex: 1,
+    lineHeight: 16,
+  },
+  loginButton: {
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  loginButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 24,
+    gap: 12,
+    marginVertical: 8,
   },
   dividerLine: {
     flex: 1,
     height: 1,
   },
   dividerText: {
-    marginHorizontal: 16,
     fontSize: 14,
   },
   googleButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 12,
+    padding: 16,
     borderRadius: 8,
     borderWidth: 1,
     gap: 8,
   },
   googleButtonText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  forgotPassword: {
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  forgotPasswordText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   signupContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
+    marginTop: 16,
   },
   signupText: {
     fontSize: 14,

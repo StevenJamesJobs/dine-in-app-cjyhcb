@@ -52,6 +52,12 @@ export default function TabLayout() {
       label: 'Training',
     },
     {
+      name: 'rewards',
+      route: '/(tabs)/rewards',
+      icon: 'star.fill',
+      label: 'Rewards',
+    },
+    {
       name: 'profile',
       route: '/(tabs)/profile',
       icon: 'person.fill',

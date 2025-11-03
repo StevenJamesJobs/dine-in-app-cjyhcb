@@ -8,16 +8,19 @@ interface User {
   email: string;
   name: string;
   role: UserRole;
+  isManager?: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
   userRole: UserRole;
   isAuthenticated: boolean;
+  isManager: boolean;
   login: (email: string, password: string, role: UserRole) => Promise<void>;
   loginWithGoogle: (role: UserRole) => Promise<void>;
   logout: () => void;
   switchRole: (role: UserRole) => void;
+  toggleManagerMode: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,11 +32,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string, role: UserRole) => {
     console.log('Login attempt:', email, role);
     // Mock authentication - replace with real authentication later
+    // Check if email contains "manager" to simulate manager login
+    const isManager = email.toLowerCase().includes('manager');
     const mockUser: User = {
       id: '1',
       email,
       name: email.split('@')[0],
       role,
+      isManager,
     };
     setUser(mockUser);
     setUserRole(role);
@@ -47,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email: 'user@gmail.com',
       name: 'Google User',
       role,
+      isManager: false,
     };
     setUser(mockUser);
     setUserRole(role);
@@ -66,16 +73,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const toggleManagerMode = () => {
+    if (user) {
+      setUser({ ...user, isManager: !user.isManager });
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
         user,
         userRole,
         isAuthenticated: !!user,
+        isManager: user?.isManager || false,
         login,
         loginWithGoogle,
         logout,
         switchRole,
+        toggleManagerMode,
       }}
     >
       {children}
