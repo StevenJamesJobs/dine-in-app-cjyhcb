@@ -1,3 +1,4 @@
+
 const tintColorLight = "#0a7ea4";
 const tintColorDark = "#fff";
 
@@ -20,6 +21,55 @@ export const appleRed = "#FF3B30";
 
 export const borderColor = "#A1A1AA80";
 export const appleGreen = "#34C759";
+
+// Restaurant App Colors
+export const restaurantColors = {
+  customer: {
+    light: {
+      primary: "#F0EAD6", // Eggshell Blue (light)
+      secondary: "#FFFFFF", // White
+      accent: "#4A6FA5", // Darker Blue
+      accentGray: "#6B7280", // Gray
+      text: "#1F2937",
+      textSecondary: "#6B7280",
+      background: "#FFFFFF",
+      cardBackground: "#F9FAFB",
+    },
+    dark: {
+      primary: "#2C3E50", // Darker version of eggshell blue
+      secondary: "#1F2937", // Dark gray instead of white
+      accent: "#5B7FA8", // Slightly lighter blue for dark mode
+      accentGray: "#9CA3AF", // Lighter gray for dark mode
+      text: "#F9FAFB",
+      textSecondary: "#D1D5DB",
+      background: "#111827",
+      cardBackground: "#1F2937",
+    },
+  },
+  employee: {
+    light: {
+      primary: "#2C3E50", // Darker blue
+      secondary: "#34495E", // Dark gray-blue
+      accent: "#3B5998", // Darker accent blue
+      accentGray: "#4B5563", // Darker gray
+      text: "#F9FAFB",
+      textSecondary: "#D1D5DB",
+      background: "#1F2937",
+      cardBackground: "#374151",
+    },
+    dark: {
+      primary: "#1A252F", // Even darker blue
+      secondary: "#1F2937", // Very dark gray
+      accent: "#2E4A6F", // Very dark blue
+      accentGray: "#374151", // Very dark gray
+      text: "#F9FAFB",
+      textSecondary: "#D1D5DB",
+      background: "#0F172A",
+      cardBackground: "#1E293B",
+    },
+  },
+};
+
 export const Colors = {
   light: {
     text: "#11181C",
