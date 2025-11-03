@@ -41,11 +41,7 @@ export default function RewardsScreen() {
   const [awardAmount, setAwardAmount] = useState('');
   const [awardReason, setAwardReason] = useState('');
 
-  if (!userRole) return null;
-
-  const colors = restaurantColors[userRole][isDark ? 'dark' : 'light'];
-
-  // Mock data for employees
+  // Mock data for employees - moved before early return
   const [employees, setEmployees] = useState<Employee[]>([
     { id: '1', name: 'Sarah Johnson', bucks: 850, avatar: '👩‍🍳' },
     { id: '2', name: 'Mike Chen', bucks: 720, avatar: '👨‍🍳' },
@@ -56,13 +52,18 @@ export default function RewardsScreen() {
     { id: '7', name: 'Maria Garcia', bucks: 380, avatar: '👩‍🦳' },
   ]);
 
-  // Mock transaction history for current user
+  // Mock transaction history for current user - moved before early return
   const [transactions] = useState<Transaction[]>([
     { id: '1', amount: 50, reason: 'Excellent customer service', date: '2024-03-15', from: 'Manager John' },
     { id: '2', amount: 30, reason: 'Perfect attendance this week', date: '2024-03-10', from: 'Manager Sarah' },
     { id: '3', amount: 25, reason: 'Helped train new employee', date: '2024-03-05', from: 'Manager John' },
     { id: '4', amount: 40, reason: 'Great review from customer', date: '2024-03-01', from: 'Manager Sarah' },
   ]);
+
+  // Early return AFTER all hooks
+  if (!userRole) return null;
+
+  const colors = restaurantColors[userRole][isDark ? 'dark' : 'light'];
 
   const currentUserBucks = employees.find(e => e.id === user?.id)?.bucks || 420;
 
