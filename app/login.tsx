@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { router } from 'expo-router';
 import {
   View,
@@ -27,11 +27,19 @@ export default function LoginScreen() {
   const [fullName, setFullName] = useState('');
   const [selectedRole, setSelectedRole] = useState<UserRole>('customer');
   const [isSignUp, setIsSignUp] = useState(false);
-  const { login, signUp, loginWithGoogle } = useAuth();
+  const { login, signUp, loginWithGoogle, isAuthenticated, loading } = useAuth();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
   const colors = restaurantColors[selectedRole === 'manager' ? 'employee' : selectedRole][isDark ? 'dark' : 'light'];
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      console.log('User is authenticated, redirecting to home...');
+      router.replace('/(tabs)/(home)/');
+    }
+  }, [isAuthenticated, loading]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -47,7 +55,8 @@ export default function LoginScreen() {
         return;
       }
 
-      router.replace('/(tabs)/(home)/');
+      // Navigation will be handled by the useEffect above
+      console.log('Login successful');
     } catch (error: any) {
       console.error('Login error:', error);
       Alert.alert('Error', 'An unexpected error occurred');
@@ -107,6 +116,11 @@ export default function LoginScreen() {
       Alert.alert('Error', 'An unexpected error occurred');
     }
   };
+
+  // Don't render login screen if already authenticated
+  if (isAuthenticated) {
+    return null;
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>

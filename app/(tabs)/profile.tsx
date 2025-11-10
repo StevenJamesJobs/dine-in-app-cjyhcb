@@ -12,6 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import { IconSymbol } from '@/components/IconSymbol';
+import LogoutDropdown from '@/components/LogoutDropdown';
 import { useAuth } from '@/contexts/AuthContext';
 import { restaurantColors } from '@/constants/Colors';
 
@@ -37,7 +38,7 @@ export default function ProfileScreen() {
           text: 'Logout',
           style: 'destructive',
           onPress: async () => {
-            console.log('User confirmed logout');
+            console.log('User confirmed logout from profile screen');
             await logout();
           },
         },
@@ -45,10 +46,10 @@ export default function ProfileScreen() {
     );
   };
 
-  const renderHeaderRight = () => (
-    <Pressable onPress={handleLogout} style={styles.headerButtonContainer}>
-      <IconSymbol name="rectangle.portrait.and.arrow.right" size={24} color={colors.accent} />
-    </Pressable>
+  const renderHeaderLeft = () => (
+    <View style={{ marginLeft: 16 }}>
+      <LogoutDropdown />
+    </View>
   );
 
   return (
@@ -56,7 +57,7 @@ export default function ProfileScreen() {
       <Stack.Screen
         options={{
           title: 'Profile',
-          headerRight: renderHeaderRight,
+          headerLeft: renderHeaderLeft,
           headerStyle: {
             backgroundColor: colors.background,
           },
@@ -156,7 +157,7 @@ export default function ProfileScreen() {
 
           {/* Logout Button */}
           <Pressable
-            style={[styles.logoutButton, { backgroundColor: colors.accent }]}
+            style={[styles.logoutButton, { backgroundColor: '#FF3B30' }]}
             onPress={handleLogout}
           >
             <IconSymbol name="rectangle.portrait.and.arrow.right" size={20} color="#FFFFFF" />
@@ -175,10 +176,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 16,
     paddingBottom: 100,
-  },
-  headerButtonContainer: {
-    padding: 6,
-    marginRight: 10,
   },
   section: {
     borderRadius: 12,

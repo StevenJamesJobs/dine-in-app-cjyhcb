@@ -72,13 +72,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
         
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          const profileData = await fetchProfile(session.user.id);
-          setProfile(profileData);
-        } else {
+        if (event === 'SIGNED_OUT') {
+          console.log('User signed out - clearing state and redirecting...');
+          setUser(null);
           setProfile(null);
+          // Use replace to ensure we can't go back
+          router.replace('/login');
+        } else {
+          setUser(session?.user ?? null);
+          
+          if (session?.user) {
+            const profileData = await fetchProfile(session.user.id);
+            setProfile(profileData);
+          } else {
+            setProfile(null);
+          }
         }
         
         setLoading(false);
@@ -194,30 +202,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      console.log('Logging out user...');
+      console.log('Logout initiated...');
       
-      // Clear local state first
-      setUser(null);
-      setProfile(null);
-      
-      // Sign out from Supabase
+      // Sign out from Supabase - this will trigger the SIGNED_OUT event
       const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error('Logout error:', error);
+        // Even if there's an error, clear local state
+        setUser(null);
+        setProfile(null);
+        router.replace('/login');
       }
       
-      // Navigate to login screen
-      console.log('Navigating to login screen...');
-      setTimeout(() => {
-        router.replace('/login');
-      }, 100);
+      // The SIGNED_OUT event handler will clear state and navigate
+      console.log('Logout successful');
     } catch (error) {
       console.error('Logout exception:', error);
-      // Even if there's an error, try to navigate to login
-      setTimeout(() => {
-        router.replace('/login');
-      }, 100);
+      // Force clear state and navigate even on error
+      setUser(null);
+      setProfile(null);
+      router.replace('/login');
     }
   };
 

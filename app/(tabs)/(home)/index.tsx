@@ -2,6 +2,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Stack, router } from 'expo-router';
 import { IconSymbol } from '@/components/IconSymbol';
+import LogoutDropdown from '@/components/LogoutDropdown';
 import React, { useEffect, useState } from 'react';
 import {
   ScrollView,
@@ -107,6 +108,12 @@ export default function HomeScreen() {
     }
   };
 
+  const renderHeaderLeft = () => (
+    <View style={{ marginLeft: 16 }}>
+      <LogoutDropdown />
+    </View>
+  );
+
   const renderHeaderRight = () => (
     <View style={{ flexDirection: 'row', gap: 12, marginRight: 16 }}>
       {isManager && (
@@ -139,6 +146,7 @@ export default function HomeScreen() {
         <Stack.Screen
           options={{
             title: 'Welcome',
+            headerLeft: renderHeaderLeft,
             headerRight: renderHeaderRight,
             headerStyle: {
               backgroundColor: colors.background,
@@ -275,6 +283,7 @@ export default function HomeScreen() {
       <Stack.Screen
         options={{
           title: isManager ? 'Manager Dashboard' : 'Employee Dashboard',
+          headerLeft: renderHeaderLeft,
           headerRight: renderHeaderRight,
           headerStyle: {
             backgroundColor: colors.background,
