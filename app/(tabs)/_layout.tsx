@@ -15,6 +15,12 @@ export default function TabLayout() {
       name: '(home)',
       route: '/(tabs)/(home)/',
       icon: 'house.fill',
+      label: 'Home',
+    },
+    {
+      name: 'menu',
+      route: '/(tabs)/menu',
+      icon: 'book.fill',
       label: 'Menu',
     },
     {
@@ -91,6 +97,7 @@ export default function TabLayout() {
         }}
       >
         <Stack.Screen name="(home)" />
+        <Stack.Screen name="menu" />
         <Stack.Screen name="events" />
         <Stack.Screen name="rewards" />
         <Stack.Screen name="training" />
