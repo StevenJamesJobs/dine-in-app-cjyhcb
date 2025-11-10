@@ -7,9 +7,9 @@ import FloatingTabBar, { TabBarItem } from '@/components/FloatingTabBar';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function TabLayout() {
-  const { userRole } = useAuth();
+  const { userRole, isManager } = useAuth();
 
-  // Customer tabs
+  // Customer tabs - simplified navigation
   const customerTabs: TabBarItem[] = [
     {
       name: '(home)',
@@ -30,16 +30,16 @@ export default function TabLayout() {
       label: 'Events',
     },
     {
-      name: 'rewards',
-      route: '/(tabs)/rewards',
-      icon: 'gift.fill',
-      label: 'Rewards',
+      name: 'about',
+      route: '/(tabs)/about',
+      icon: 'info.circle.fill',
+      label: 'About',
     },
     {
-      name: 'profile',
-      route: '/(tabs)/profile',
-      icon: 'person.fill',
-      label: 'About',
+      name: 'gallery',
+      route: '/(tabs)/gallery',
+      icon: 'photo.fill',
+      label: 'Gallery',
     },
   ];
 
@@ -49,7 +49,7 @@ export default function TabLayout() {
       name: '(home)',
       route: '/(tabs)/(home)/',
       icon: 'house.fill',
-      label: 'Dashboard',
+      label: 'Home',
     },
     {
       name: 'training',
@@ -71,7 +71,44 @@ export default function TabLayout() {
     },
   ];
 
-  const tabs = userRole === 'employee' ? employeeTabs : customerTabs;
+  // Manager tabs - comprehensive management
+  const managerTabs: TabBarItem[] = [
+    {
+      name: '(home)',
+      route: '/(tabs)/(home)/',
+      icon: 'house.fill',
+      label: 'Home',
+    },
+    {
+      name: 'manager',
+      route: '/(tabs)/manager',
+      icon: 'wrench.and.screwdriver.fill',
+      label: 'Manage',
+    },
+    {
+      name: 'employees',
+      route: '/(tabs)/employees',
+      icon: 'person.2.fill',
+      label: 'Staff',
+    },
+    {
+      name: 'training',
+      route: '/(tabs)/training',
+      icon: 'book.fill',
+      label: 'Training',
+    },
+    {
+      name: 'profile',
+      route: '/(tabs)/profile',
+      icon: 'person.fill',
+      label: 'Profile',
+    },
+  ];
+
+  const tabs = 
+    userRole === 'manager' ? managerTabs :
+    userRole === 'employee' ? employeeTabs : 
+    customerTabs;
 
   // Use NativeTabs for iOS, custom FloatingTabBar for Android and Web
   if (Platform.OS === 'ios') {
@@ -99,9 +136,13 @@ export default function TabLayout() {
         <Stack.Screen name="(home)" />
         <Stack.Screen name="menu" />
         <Stack.Screen name="events" />
+        <Stack.Screen name="about" />
+        <Stack.Screen name="gallery" />
         <Stack.Screen name="rewards" />
         <Stack.Screen name="training" />
         <Stack.Screen name="profile" />
+        <Stack.Screen name="manager" />
+        <Stack.Screen name="employees" />
       </Stack>
       <FloatingTabBar tabs={tabs} />
     </>

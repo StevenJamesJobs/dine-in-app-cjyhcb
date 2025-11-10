@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Stack } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+import { Stack, router } from 'expo-router';
 import {
   ScrollView,
   StyleSheet,
@@ -9,23 +9,72 @@ import {
   Platform,
   useColorScheme,
   Pressable,
+  ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { IconSymbol } from '@/components/IconSymbol';
 import { useAuth } from '@/contexts/AuthContext';
 import { restaurantColors } from '@/constants/Colors';
+import { supabase } from '@/app/integrations/supabase/client';
+import type { Database } from '@/app/integrations/supabase/types';
+
+type Event = Database['public']['Tables']['events']['Row'];
 
 export default function EventsScreen() {
-  const { userRole, logout } = useAuth();
+  const { userRole } = useAuth();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const colors = restaurantColors[userRole || 'customer'][isDark ? 'dark' : 'light'];
 
-  if (!userRole) return null;
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const colors = restaurantColors[userRole][isDark ? 'dark' : 'light'];
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  const loadEvents = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('is_published', true)
+        .gte('event_date', new Date().toISOString())
+        .order('event_date', { ascending: true });
+
+      if (error) {
+        console.error('Error loading events:', error);
+        return;
+      }
+
+      setEvents(data || []);
+    } catch (error) {
+      console.error('Error in loadEvents:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRSVP = async (rsvpLink: string) => {
+    try {
+      const supported = await Linking.canOpenURL(rsvpLink);
+      if (supported) {
+        await Linking.openURL(rsvpLink);
+      } else {
+        console.error('Cannot open URL:', rsvpLink);
+      }
+    } catch (error) {
+      console.error('Error opening RSVP link:', error);
+    }
+  };
 
   const renderHeaderRight = () => (
-    <Pressable onPress={logout} style={styles.headerButtonContainer}>
-      <IconSymbol name="rectangle.portrait.and.arrow.right" size={24} color={colors.accent} />
+    <Pressable
+      onPress={() => router.push('/(tabs)/profile')}
+      style={{ marginRight: 16 }}
+    >
+      <IconSymbol name="person.circle.fill" size={28} color={colors.accent} />
     </Pressable>
   );
 
@@ -33,7 +82,7 @@ export default function EventsScreen() {
     <>
       <Stack.Screen
         options={{
-          title: 'Events',
+          title: 'Events & Entertainment',
           headerRight: renderHeaderRight,
           headerStyle: {
             backgroundColor: colors.background,
@@ -43,140 +92,108 @@ export default function EventsScreen() {
         }}
       />
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <ScrollView
-          contentContainerStyle={[
-            styles.scrollContent,
-            Platform.OS !== 'ios' && styles.scrollContentWithTabBar,
-          ]}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Upcoming Events */}
-          <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
-            <View style={styles.sectionHeader}>
-              <IconSymbol name="calendar" size={24} color={colors.accent} />
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.accent} />
+          </View>
+        ) : (
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Header */}
+            <View style={styles.header}>
+              <Text style={[styles.headerTitle, { color: colors.text }]}>
                 Upcoming Events
               </Text>
+              <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
+                Join us for special events and entertainment
+              </Text>
             </View>
-            <View style={styles.eventCard}>
-              <View style={[styles.eventDate, { backgroundColor: colors.accent }]}>
-                <Text style={styles.eventDateDay}>15</Text>
-                <Text style={styles.eventDateMonth}>MAR</Text>
-              </View>
-              <View style={styles.eventContent}>
-                <Text style={[styles.eventTitle, { color: colors.text }]}>
-                  Live Music Night
-                </Text>
-                <Text style={[styles.eventDescription, { color: colors.textSecondary }]}>
-                  Join us for an evening of live jazz music
-                </Text>
-                <View style={styles.eventMeta}>
-                  <IconSymbol name="clock.fill" size={14} color={colors.textSecondary} />
-                  <Text style={[styles.eventTime, { color: colors.textSecondary }]}>
-                    7:00 PM - 10:00 PM
-                  </Text>
-                </View>
-              </View>
-            </View>
-            <View style={styles.eventCard}>
-              <View style={[styles.eventDate, { backgroundColor: colors.accent }]}>
-                <Text style={styles.eventDateDay}>22</Text>
-                <Text style={styles.eventDateMonth}>MAR</Text>
-              </View>
-              <View style={styles.eventContent}>
-                <Text style={[styles.eventTitle, { color: colors.text }]}>
-                  Wine Tasting Event
-                </Text>
-                <Text style={[styles.eventDescription, { color: colors.textSecondary }]}>
-                  Sample our finest selection of wines
-                </Text>
-                <View style={styles.eventMeta}>
-                  <IconSymbol name="clock.fill" size={14} color={colors.textSecondary} />
-                  <Text style={[styles.eventTime, { color: colors.textSecondary }]}>
-                    6:00 PM - 9:00 PM
-                  </Text>
-                </View>
-              </View>
-            </View>
-          </View>
 
-          {/* Weekly Specials */}
-          <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
-            <View style={styles.sectionHeader}>
-              <IconSymbol name="star.fill" size={24} color={colors.accent} />
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Weekly Specials
-              </Text>
-            </View>
-            <View style={styles.specialCard}>
-              <View style={styles.specialHeader}>
-                <Text style={[styles.specialDay, { color: colors.accent }]}>
-                  Monday
+            {/* Events List */}
+            {events.length === 0 ? (
+              <View style={[styles.emptyState, { backgroundColor: colors.cardBackground }]}>
+                <IconSymbol name="calendar" size={64} color={colors.textSecondary} />
+                <Text style={[styles.emptyStateText, { color: colors.text }]}>
+                  No Upcoming Events
                 </Text>
-                <Text style={[styles.specialTitle, { color: colors.text }]}>
-                  Burger Night
+                <Text style={[styles.emptyStateSubtext, { color: colors.textSecondary }]}>
+                  Check back soon for exciting events and entertainment!
                 </Text>
               </View>
-              <Text style={[styles.specialDescription, { color: colors.textSecondary }]}>
-                All burgers 20% off with any drink purchase
-              </Text>
-            </View>
-            <View style={styles.specialCard}>
-              <View style={styles.specialHeader}>
-                <Text style={[styles.specialDay, { color: colors.accent }]}>
-                  Wednesday
-                </Text>
-                <Text style={[styles.specialTitle, { color: colors.text }]}>
-                  Wine Down Wednesday
-                </Text>
-              </View>
-              <Text style={[styles.specialDescription, { color: colors.textSecondary }]}>
-                Half price on all wines by the glass
-              </Text>
-            </View>
-            <View style={styles.specialCard}>
-              <View style={styles.specialHeader}>
-                <Text style={[styles.specialDay, { color: colors.accent }]}>
-                  Friday
-                </Text>
-                <Text style={[styles.specialTitle, { color: colors.text }]}>
-                  Fresh Catch Friday
-                </Text>
-              </View>
-              <Text style={[styles.specialDescription, { color: colors.textSecondary }]}>
-                Special seafood selections from local fishermen
-              </Text>
-            </View>
-          </View>
+            ) : (
+              events.map((event) => (
+                <View
+                  key={event.id}
+                  style={[styles.eventCard, { backgroundColor: colors.cardBackground }]}
+                >
+                  <View style={styles.eventDateBadge}>
+                    <View style={[styles.dateBadge, { backgroundColor: colors.accent }]}>
+                      <Text style={styles.dateBadgeDay}>
+                        {new Date(event.event_date).getDate()}
+                      </Text>
+                      <Text style={styles.dateBadgeMonth}>
+                        {new Date(event.event_date).toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}
+                      </Text>
+                    </View>
+                    <View style={styles.eventInfo}>
+                      <Text style={[styles.eventTitle, { color: colors.text }]}>
+                        {event.title}
+                      </Text>
+                      <View style={styles.eventMeta}>
+                        <IconSymbol name="clock.fill" size={14} color={colors.textSecondary} />
+                        <Text style={[styles.eventTime, { color: colors.textSecondary }]}>
+                          {new Date(event.event_date).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                          })}
+                        </Text>
+                      </View>
+                      {event.location && (
+                        <View style={styles.eventMeta}>
+                          <IconSymbol name="location.fill" size={14} color={colors.textSecondary} />
+                          <Text style={[styles.eventLocation, { color: colors.textSecondary }]}>
+                            {event.location}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  </View>
 
-          {/* Social Engagements */}
-          <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
-            <View style={styles.sectionHeader}>
-              <IconSymbol name="person.3.fill" size={24} color={colors.accent} />
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Social Engagements
-              </Text>
-            </View>
-            <Text style={[styles.socialDescription, { color: colors.textSecondary }]}>
-              Follow us on social media to stay updated on all our events, 
-              special offers, and behind-the-scenes content!
-            </Text>
-            <View style={styles.socialButtons}>
-              <Pressable style={[styles.socialButton, { backgroundColor: colors.accent + '20' }]}>
-                <IconSymbol name="camera.fill" size={20} color={colors.accent} />
-                <Text style={[styles.socialButtonText, { color: colors.accent }]}>
-                  Instagram
+                  {event.description && (
+                    <Text style={[styles.eventDescription, { color: colors.textSecondary }]}>
+                      {event.description}
+                    </Text>
+                  )}
+
+                  {event.rsvp_link && (
+                    <Pressable
+                      style={[styles.rsvpButton, { backgroundColor: colors.accent }]}
+                      onPress={() => handleRSVP(event.rsvp_link!)}
+                    >
+                      <IconSymbol name="checkmark.circle.fill" size={20} color="#FFFFFF" />
+                      <Text style={styles.rsvpButtonText}>RSVP Now</Text>
+                    </Pressable>
+                  )}
+                </View>
+              ))
+            )}
+
+            {/* Info Card */}
+            <View style={[styles.infoCard, { backgroundColor: colors.cardBackground }]}>
+              <IconSymbol name="info.circle.fill" size={20} color={colors.accent} />
+              <View style={styles.infoContent}>
+                <Text style={[styles.infoTitle, { color: colors.text }]}>
+                  Stay Updated
                 </Text>
-              </Pressable>
-              <Pressable style={[styles.socialButton, { backgroundColor: colors.accent + '20' }]}>
-                <IconSymbol name="f.square.fill" size={20} color={colors.accent} />
-                <Text style={[styles.socialButtonText, { color: colors.accent }]}>
-                  Facebook
+                <Text style={[styles.infoText, { color: colors.textSecondary }]}>
+                  Follow us on social media to stay informed about upcoming events and special promotions!
                 </Text>
-              </Pressable>
+              </View>
             </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        )}
       </View>
     </>
   );
@@ -186,107 +203,94 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollContent: {
-    padding: 16,
-  },
-  scrollContentWithTabBar: {
-    paddingBottom: 100,
-  },
-  headerButtonContainer: {
-    padding: 6,
-    marginRight: 10,
-  },
-  section: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 8,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  eventCard: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    gap: 12,
-  },
-  eventDate: {
-    width: 60,
-    height: 60,
-    borderRadius: 12,
+  loadingContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  eventDateDay: {
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 100,
+  },
+  header: {
+    marginBottom: 24,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  headerSubtitle: {
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  emptyState: {
+    padding: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    gap: 12,
+  },
+  emptyStateText: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  eventCard: {
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  eventDateBadge: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 16,
+  },
+  dateBadge: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dateBadgeDay: {
     fontSize: 24,
     fontWeight: '700',
     color: '#FFFFFF',
   },
-  eventDateMonth: {
+  dateBadgeMonth: {
     fontSize: 12,
     fontWeight: '600',
     color: '#FFFFFF',
   },
-  eventContent: {
+  eventInfo: {
     flex: 1,
   },
   eventTitle: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 4,
-  },
-  eventDescription: {
-    fontSize: 14,
     marginBottom: 8,
   },
   eventMeta: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    marginBottom: 4,
   },
   eventTime: {
     fontSize: 13,
   },
-  specialCard: {
-    marginBottom: 16,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(128, 128, 128, 0.2)',
+  eventLocation: {
+    fontSize: 13,
   },
-  specialHeader: {
-    marginBottom: 8,
-  },
-  specialDay: {
-    fontSize: 14,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    marginBottom: 4,
-  },
-  specialTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  specialDescription: {
+  eventDescription: {
     fontSize: 14,
     lineHeight: 20,
-  },
-  socialDescription: {
-    fontSize: 15,
-    lineHeight: 22,
     marginBottom: 16,
   },
-  socialButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  socialButton: {
-    flex: 1,
+  rsvpButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -294,8 +298,28 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     gap: 8,
   },
-  socialButtonText: {
+  rsvpButtonText: {
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
+  },
+  infoCard: {
+    flexDirection: 'row',
+    padding: 16,
+    borderRadius: 12,
+    gap: 12,
+    marginTop: 8,
+  },
+  infoContent: {
+    flex: 1,
+  },
+  infoTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  infoText: {
+    fontSize: 14,
+    lineHeight: 20,
   },
 });

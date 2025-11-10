@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Stack } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import {
   ScrollView,
   StyleSheet,
@@ -16,7 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { restaurantColors } from '@/constants/Colors';
 
 export default function ProfileScreen() {
-  const { userRole, user, logout } = useAuth();
+  const { userRole, user, profile, logout } = useAuth();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
@@ -51,130 +51,6 @@ export default function ProfileScreen() {
     </Pressable>
   );
 
-  if (userRole === 'customer') {
-    return (
-      <>
-        <Stack.Screen
-          options={{
-            title: 'About Us',
-            headerRight: renderHeaderRight,
-            headerStyle: {
-              backgroundColor: colors.background,
-            },
-            headerTintColor: colors.text,
-            headerShadowVisible: false,
-          }}
-        />
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
-          <ScrollView
-            contentContainerStyle={[
-              styles.scrollContent,
-              Platform.OS !== 'ios' && styles.scrollContentWithTabBar,
-            ]}
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Restaurant Info */}
-            <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
-              <View style={styles.logoContainer}>
-                <IconSymbol name="fork.knife" size={48} color={colors.accent} />
-                <Text style={[styles.restaurantName, { color: colors.text }]}>
-                  McLoone&apos;s Restaurant
-                </Text>
-              </View>
-              <Text style={[styles.aboutText, { color: colors.textSecondary }]}>
-                Welcome to McLoone&apos;s! We&apos;ve been serving delicious, 
-                authentic cuisine for over 20 years. Our passion is bringing people together 
-                through great food and warm hospitality.
-              </Text>
-            </View>
-
-            {/* Our Story */}
-            <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
-              <View style={styles.sectionHeader}>
-                <IconSymbol name="book.fill" size={24} color={colors.accent} />
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                  Our Story
-                </Text>
-              </View>
-              <Text style={[styles.storyText, { color: colors.textSecondary }]}>
-                Founded in 2003, McLoone&apos;s started as a small family kitchen with a 
-                big dream. Today, we&apos;re proud to serve our community with the same 
-                dedication to quality and authenticity that we started with.
-              </Text>
-            </View>
-
-            {/* Location & Hours */}
-            <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
-              <View style={styles.sectionHeader}>
-                <IconSymbol name="location.fill" size={24} color={colors.accent} />
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                  Location & Hours
-                </Text>
-              </View>
-              <View style={styles.infoItem}>
-                <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
-                  Address
-                </Text>
-                <Text style={[styles.infoValue, { color: colors.text }]}>
-                  123 Main Street{'\n'}
-                  Anytown, ST 12345
-                </Text>
-              </View>
-              <View style={styles.infoItem}>
-                <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
-                  Hours
-                </Text>
-                <Text style={[styles.infoValue, { color: colors.text }]}>
-                  Mon-Thu: 11:00 AM - 10:00 PM{'\n'}
-                  Fri-Sat: 11:00 AM - 11:00 PM{'\n'}
-                  Sunday: 10:00 AM - 9:00 PM
-                </Text>
-              </View>
-            </View>
-
-            {/* Contact */}
-            <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
-              <View style={styles.sectionHeader}>
-                <IconSymbol name="phone.fill" size={24} color={colors.accent} />
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                  Contact Us
-                </Text>
-              </View>
-              <View style={styles.contactRow}>
-                <IconSymbol name="phone.fill" size={20} color={colors.accent} />
-                <Text style={[styles.contactText, { color: colors.text }]}>
-                  (555) 123-4567
-                </Text>
-              </View>
-              <View style={styles.contactRow}>
-                <IconSymbol name="envelope.fill" size={20} color={colors.accent} />
-                <Text style={[styles.contactText, { color: colors.text }]}>
-                  info@mcloones.com
-                </Text>
-              </View>
-              <View style={styles.contactRow}>
-                <IconSymbol name="globe" size={20} color={colors.accent} />
-                <Text style={[styles.contactText, { color: colors.text }]}>
-                  www.mcloones.com
-                </Text>
-              </View>
-            </View>
-
-            {/* Logout Button */}
-            <Pressable
-              style={[styles.logoutButton, { backgroundColor: colors.accent }]}
-              onPress={handleLogout}
-            >
-              <IconSymbol name="rectangle.portrait.and.arrow.right" size={20} color="#FFFFFF" />
-              <Text style={styles.logoutButtonText}>Logout</Text>
-            </Pressable>
-          </ScrollView>
-        </View>
-      </>
-    );
-  }
-
-  // Employee Profile
   return (
     <>
       <Stack.Screen
@@ -190,10 +66,7 @@ export default function ProfileScreen() {
       />
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView
-          contentContainerStyle={[
-            styles.scrollContent,
-            Platform.OS !== 'ios' && styles.scrollContentWithTabBar,
-          ]}
+          contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
           {/* User Info */}
@@ -201,61 +74,35 @@ export default function ProfileScreen() {
             <View style={styles.profileHeader}>
               <View style={[styles.avatar, { backgroundColor: colors.accent }]}>
                 <Text style={styles.avatarText}>
-                  {user?.email?.charAt(0).toUpperCase() || 'E'}
+                  {(profile?.full_name || user?.email || 'U').charAt(0).toUpperCase()}
                 </Text>
               </View>
               <Text style={[styles.userName, { color: colors.text }]}>
-                {user?.user_metadata?.full_name || 'Employee'}
+                {profile?.full_name || 'User'}
               </Text>
               <Text style={[styles.userEmail, { color: colors.textSecondary }]}>
-                {user?.email || 'employee@mcloones.com'}
+                {user?.email || 'user@mcloones.com'}
               </Text>
+              <View style={[styles.roleBadge, { backgroundColor: colors.accent + '20' }]}>
+                <Text style={[styles.roleBadgeText, { color: colors.accent }]}>
+                  {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
+                </Text>
+              </View>
             </View>
           </View>
 
-          {/* Quick Actions */}
-          <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
-            <View style={styles.sectionHeader}>
-              <IconSymbol name="square.grid.2x2.fill" size={24} color={colors.accent} />
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Quick Actions
-              </Text>
-            </View>
-            <Pressable style={styles.actionItem}>
-              <IconSymbol name="calendar" size={20} color={colors.accent} />
-              <Text style={[styles.actionText, { color: colors.text }]}>
-                View Full Schedule
-              </Text>
-              <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
-            </Pressable>
-            <Pressable style={styles.actionItem}>
-              <IconSymbol name="clock.fill" size={20} color={colors.accent} />
-              <Text style={[styles.actionText, { color: colors.text }]}>
-                Time Clock
-              </Text>
-              <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
-            </Pressable>
-            <Pressable style={styles.actionItem}>
-              <IconSymbol name="dollarsign.circle.fill" size={20} color={colors.accent} />
-              <Text style={[styles.actionText, { color: colors.text }]}>
-                Payroll Information
-              </Text>
-              <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
-            </Pressable>
-          </View>
-
-          {/* Settings */}
+          {/* Account Settings */}
           <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
             <View style={styles.sectionHeader}>
               <IconSymbol name="gear" size={24} color={colors.accent} />
               <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Settings
+                Account Settings
               </Text>
             </View>
             <Pressable style={styles.actionItem}>
-              <IconSymbol name="bell.fill" size={20} color={colors.accent} />
+              <IconSymbol name="person.fill" size={20} color={colors.accent} />
               <Text style={[styles.actionText, { color: colors.text }]}>
-                Notifications
+                Edit Profile
               </Text>
               <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
             </Pressable>
@@ -263,6 +110,45 @@ export default function ProfileScreen() {
               <IconSymbol name="lock.fill" size={20} color={colors.accent} />
               <Text style={[styles.actionText, { color: colors.text }]}>
                 Change Password
+              </Text>
+              <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
+            </Pressable>
+            <Pressable style={styles.actionItem}>
+              <IconSymbol name="bell.fill" size={20} color={colors.accent} />
+              <Text style={[styles.actionText, { color: colors.text }]}>
+                Notifications
+              </Text>
+              <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
+            </Pressable>
+          </View>
+
+          {/* App Info */}
+          <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
+            <View style={styles.sectionHeader}>
+              <IconSymbol name="info.circle.fill" size={24} color={colors.accent} />
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                About
+              </Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+                Version
+              </Text>
+              <Text style={[styles.infoValue, { color: colors.text }]}>
+                1.0.0
+              </Text>
+            </View>
+            <Pressable style={styles.actionItem}>
+              <IconSymbol name="doc.text.fill" size={20} color={colors.accent} />
+              <Text style={[styles.actionText, { color: colors.text }]}>
+                Terms of Service
+              </Text>
+              <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
+            </Pressable>
+            <Pressable style={styles.actionItem}>
+              <IconSymbol name="hand.raised.fill" size={20} color={colors.accent} />
+              <Text style={[styles.actionText, { color: colors.text }]}>
+                Privacy Policy
               </Text>
               <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
             </Pressable>
@@ -288,8 +174,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-  },
-  scrollContentWithTabBar: {
     paddingBottom: 100,
   },
   headerButtonContainer: {
@@ -300,56 +184,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
-  },
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  restaurantName: {
-    fontSize: 28,
-    fontWeight: '700',
-    marginTop: 12,
-  },
-  aboutText: {
-    fontSize: 15,
-    lineHeight: 22,
-    textAlign: 'center',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 8,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  storyText: {
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  infoItem: {
-    marginBottom: 16,
-  },
-  infoLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginBottom: 4,
-    textTransform: 'uppercase',
-  },
-  infoValue: {
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  contactRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 12,
-  },
-  contactText: {
-    fontSize: 15,
   },
   profileHeader: {
     alignItems: 'center',
@@ -374,6 +208,27 @@ const styles = StyleSheet.create({
   },
   userEmail: {
     fontSize: 14,
+    marginBottom: 12,
+  },
+  roleBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  roleBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
   },
   actionItem: {
     flexDirection: 'row',
@@ -386,6 +241,21 @@ const styles = StyleSheet.create({
   actionText: {
     fontSize: 16,
     flex: 1,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(128, 128, 128, 0.2)',
+  },
+  infoLabel: {
+    fontSize: 14,
+  },
+  infoValue: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   logoutButton: {
     flexDirection: 'row',
