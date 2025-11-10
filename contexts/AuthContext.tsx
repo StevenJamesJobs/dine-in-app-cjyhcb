@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/app/integrations/supabase/client';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import type { Database } from '@/app/integrations/supabase/types';
+import { router } from 'expo-router';
 
 type UserRole = Database['public']['Enums']['user_role'];
 type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -67,8 +68,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        console.log('Auth state changed:', _event, session?.user?.email);
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
         setUser(session?.user ?? null);
         
         if (session?.user) {
@@ -76,6 +77,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setProfile(profileData);
         } else {
           setProfile(null);
+          // Redirect to login when user logs out
+          if (event === 'SIGNED_OUT') {
+            console.log('User signed out, redirecting to login...');
+            router.replace('/login');
+          }
         }
         
         setLoading(false);
@@ -187,12 +193,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      console.log('Logging out...');
-      await supabase.auth.signOut();
+      console.log('Logging out user...');
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Logout error:', error);
+        throw error;
+      }
+      
+      // Clear local state
       setUser(null);
       setProfile(null);
+      
+      // Navigate to login screen
+      console.log('Navigating to login screen...');
+      router.replace('/login');
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('Logout exception:', error);
+      // Even if there's an error, try to navigate to login
+      router.replace('/login');
     }
   };
 

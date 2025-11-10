@@ -9,6 +9,7 @@ import {
   Platform,
   useColorScheme,
   Pressable,
+  Alert,
 } from 'react-native';
 import { IconSymbol } from '@/components/IconSymbol';
 import { useAuth } from '@/contexts/AuthContext';
@@ -23,23 +24,47 @@ export default function ProfileScreen() {
 
   const colors = restaurantColors[userRole][isDark ? 'dark' : 'light'];
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            console.log('User confirmed logout');
+            await logout();
+          },
+        },
+      ]
+    );
+  };
+
   const renderHeaderRight = () => (
-    <Pressable onPress={logout} style={styles.headerButtonContainer}>
-      <IconSymbol name="rectangle.portrait.and.arrow.right" color={colors.accent} />
+    <Pressable onPress={handleLogout} style={styles.headerButtonContainer}>
+      <IconSymbol name="rectangle.portrait.and.arrow.right" size={24} color={colors.accent} />
     </Pressable>
   );
 
   if (userRole === 'customer') {
     return (
       <>
-        {Platform.OS === 'ios' && (
-          <Stack.Screen
-            options={{
-              title: 'About Us',
-              headerRight: renderHeaderRight,
-            }}
-          />
-        )}
+        <Stack.Screen
+          options={{
+            title: 'About Us',
+            headerRight: renderHeaderRight,
+            headerStyle: {
+              backgroundColor: colors.background,
+            },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        />
         <View style={[styles.container, { backgroundColor: colors.background }]}>
           <ScrollView
             contentContainerStyle={[
@@ -53,11 +78,11 @@ export default function ProfileScreen() {
               <View style={styles.logoContainer}>
                 <IconSymbol name="fork.knife" size={48} color={colors.accent} />
                 <Text style={[styles.restaurantName, { color: colors.text }]}>
-                  Our Restaurant
+                  McLoone&apos;s Restaurant
                 </Text>
               </View>
               <Text style={[styles.aboutText, { color: colors.textSecondary }]}>
-                Welcome to our family-owned restaurant! We&apos;ve been serving delicious, 
+                Welcome to McLoone&apos;s! We&apos;ve been serving delicious, 
                 authentic cuisine for over 20 years. Our passion is bringing people together 
                 through great food and warm hospitality.
               </Text>
@@ -72,7 +97,7 @@ export default function ProfileScreen() {
                 </Text>
               </View>
               <Text style={[styles.storyText, { color: colors.textSecondary }]}>
-                Founded in 2003, our restaurant started as a small family kitchen with a 
+                Founded in 2003, McLoone&apos;s started as a small family kitchen with a 
                 big dream. Today, we&apos;re proud to serve our community with the same 
                 dedication to quality and authenticity that we started with.
               </Text>
@@ -124,16 +149,25 @@ export default function ProfileScreen() {
               <View style={styles.contactRow}>
                 <IconSymbol name="envelope.fill" size={20} color={colors.accent} />
                 <Text style={[styles.contactText, { color: colors.text }]}>
-                  info@restaurant.com
+                  info@mcloones.com
                 </Text>
               </View>
               <View style={styles.contactRow}>
                 <IconSymbol name="globe" size={20} color={colors.accent} />
                 <Text style={[styles.contactText, { color: colors.text }]}>
-                  www.restaurant.com
+                  www.mcloones.com
                 </Text>
               </View>
             </View>
+
+            {/* Logout Button */}
+            <Pressable
+              style={[styles.logoutButton, { backgroundColor: colors.accent }]}
+              onPress={handleLogout}
+            >
+              <IconSymbol name="rectangle.portrait.and.arrow.right" size={20} color="#FFFFFF" />
+              <Text style={styles.logoutButtonText}>Logout</Text>
+            </Pressable>
           </ScrollView>
         </View>
       </>
@@ -143,14 +177,17 @@ export default function ProfileScreen() {
   // Employee Profile
   return (
     <>
-      {Platform.OS === 'ios' && (
-        <Stack.Screen
-          options={{
-            title: 'Profile',
-            headerRight: renderHeaderRight,
-          }}
-        />
-      )}
+      <Stack.Screen
+        options={{
+          title: 'Profile',
+          headerRight: renderHeaderRight,
+          headerStyle: {
+            backgroundColor: colors.background,
+          },
+          headerTintColor: colors.text,
+          headerShadowVisible: false,
+        }}
+      />
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView
           contentContainerStyle={[
@@ -164,14 +201,14 @@ export default function ProfileScreen() {
             <View style={styles.profileHeader}>
               <View style={[styles.avatar, { backgroundColor: colors.accent }]}>
                 <Text style={styles.avatarText}>
-                  {user?.name?.charAt(0).toUpperCase() || 'E'}
+                  {user?.email?.charAt(0).toUpperCase() || 'E'}
                 </Text>
               </View>
               <Text style={[styles.userName, { color: colors.text }]}>
-                {user?.name || 'Employee'}
+                {user?.user_metadata?.full_name || 'Employee'}
               </Text>
               <Text style={[styles.userEmail, { color: colors.textSecondary }]}>
-                {user?.email || 'employee@restaurant.com'}
+                {user?.email || 'employee@mcloones.com'}
               </Text>
             </View>
           </View>
@@ -230,6 +267,15 @@ export default function ProfileScreen() {
               <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
             </Pressable>
           </View>
+
+          {/* Logout Button */}
+          <Pressable
+            style={[styles.logoutButton, { backgroundColor: colors.accent }]}
+            onPress={handleLogout}
+          >
+            <IconSymbol name="rectangle.portrait.and.arrow.right" size={20} color="#FFFFFF" />
+            <Text style={styles.logoutButtonText}>Logout</Text>
+          </Pressable>
         </ScrollView>
       </View>
     </>
@@ -248,6 +294,7 @@ const styles = StyleSheet.create({
   },
   headerButtonContainer: {
     padding: 6,
+    marginRight: 10,
   },
   section: {
     borderRadius: 12,
@@ -339,5 +386,19 @@ const styles = StyleSheet.create({
   actionText: {
     fontSize: 16,
     flex: 1,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+    gap: 8,
+  },
+  logoutButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

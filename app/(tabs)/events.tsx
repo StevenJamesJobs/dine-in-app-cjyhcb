@@ -23,57 +23,25 @@ export default function EventsScreen() {
 
   const colors = restaurantColors[userRole][isDark ? 'dark' : 'light'];
 
-  const events = [
-    {
-      id: '1',
-      title: 'Wine Tasting Night',
-      date: 'Friday, March 15',
-      time: '7:00 PM - 10:00 PM',
-      description: 'Join us for an evening of fine wines paired with our chef&apos;s special appetizers.',
-      icon: 'wineglass',
-    },
-    {
-      id: '2',
-      title: 'Live Jazz Music',
-      date: 'Saturday, March 16',
-      time: '8:00 PM - 11:00 PM',
-      description: 'Enjoy live jazz performances while dining with us this Saturday evening.',
-      icon: 'music.note',
-    },
-    {
-      id: '3',
-      title: 'Sunday Brunch',
-      date: 'Every Sunday',
-      time: '10:00 AM - 2:00 PM',
-      description: 'Our famous all-you-can-eat brunch buffet with bottomless mimosas.',
-      icon: 'cup.and.saucer.fill',
-    },
-    {
-      id: '4',
-      title: 'Cooking Class',
-      date: 'Wednesday, March 20',
-      time: '6:00 PM - 8:00 PM',
-      description: 'Learn to make authentic Italian pasta from our head chef.',
-      icon: 'flame.fill',
-    },
-  ];
-
   const renderHeaderRight = () => (
     <Pressable onPress={logout} style={styles.headerButtonContainer}>
-      <IconSymbol name="rectangle.portrait.and.arrow.right" color={colors.accent} />
+      <IconSymbol name="rectangle.portrait.and.arrow.right" size={24} color={colors.accent} />
     </Pressable>
   );
 
   return (
     <>
-      {Platform.OS === 'ios' && (
-        <Stack.Screen
-          options={{
-            title: 'Events & Social',
-            headerRight: renderHeaderRight,
-          }}
-        />
-      )}
+      <Stack.Screen
+        options={{
+          title: 'Events',
+          headerRight: renderHeaderRight,
+          headerStyle: {
+            backgroundColor: colors.background,
+          },
+          headerTintColor: colors.text,
+          headerShadowVisible: false,
+        }}
+      />
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView
           contentContainerStyle={[
@@ -82,67 +50,128 @@ export default function EventsScreen() {
           ]}
           showsVerticalScrollIndicator={false}
         >
-          <View style={[styles.header, { backgroundColor: colors.cardBackground }]}>
-            <IconSymbol name="calendar" size={32} color={colors.accent} />
-            <Text style={[styles.headerTitle, { color: colors.text }]}>
-              Upcoming Events
-            </Text>
-            <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
-              Join us for special occasions and social gatherings
-            </Text>
-          </View>
-
-          {events.map((event) => (
-            <View
-              key={event.id}
-              style={[styles.eventCard, { backgroundColor: colors.cardBackground }]}
-            >
-              <View style={styles.eventHeader}>
-                <View style={[styles.iconContainer, { backgroundColor: colors.accent }]}>
-                  <IconSymbol name={event.icon as any} size={24} color="#FFFFFF" />
-                </View>
-                <View style={styles.eventHeaderText}>
-                  <Text style={[styles.eventTitle, { color: colors.text }]}>
-                    {event.title}
-                  </Text>
-                  <Text style={[styles.eventDate, { color: colors.accent }]}>
-                    {event.date}
+          {/* Upcoming Events */}
+          <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
+            <View style={styles.sectionHeader}>
+              <IconSymbol name="calendar" size={24} color={colors.accent} />
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Upcoming Events
+              </Text>
+            </View>
+            <View style={styles.eventCard}>
+              <View style={[styles.eventDate, { backgroundColor: colors.accent }]}>
+                <Text style={styles.eventDateDay}>15</Text>
+                <Text style={styles.eventDateMonth}>MAR</Text>
+              </View>
+              <View style={styles.eventContent}>
+                <Text style={[styles.eventTitle, { color: colors.text }]}>
+                  Live Music Night
+                </Text>
+                <Text style={[styles.eventDescription, { color: colors.textSecondary }]}>
+                  Join us for an evening of live jazz music
+                </Text>
+                <View style={styles.eventMeta}>
+                  <IconSymbol name="clock.fill" size={14} color={colors.textSecondary} />
+                  <Text style={[styles.eventTime, { color: colors.textSecondary }]}>
+                    7:00 PM - 10:00 PM
                   </Text>
                 </View>
               </View>
-              <Text style={[styles.eventTime, { color: colors.textSecondary }]}>
-                ⏰ {event.time}
-              </Text>
-              <Text style={[styles.eventDescription, { color: colors.textSecondary }]}>
-                {event.description}
-              </Text>
-              <Pressable
-                style={[styles.rsvpButton, { backgroundColor: colors.accent }]}
-              >
-                <Text style={styles.rsvpButtonText}>RSVP</Text>
-              </Pressable>
             </View>
-          ))}
+            <View style={styles.eventCard}>
+              <View style={[styles.eventDate, { backgroundColor: colors.accent }]}>
+                <Text style={styles.eventDateDay}>22</Text>
+                <Text style={styles.eventDateMonth}>MAR</Text>
+              </View>
+              <View style={styles.eventContent}>
+                <Text style={[styles.eventTitle, { color: colors.text }]}>
+                  Wine Tasting Event
+                </Text>
+                <Text style={[styles.eventDescription, { color: colors.textSecondary }]}>
+                  Sample our finest selection of wines
+                </Text>
+                <View style={styles.eventMeta}>
+                  <IconSymbol name="clock.fill" size={14} color={colors.textSecondary} />
+                  <Text style={[styles.eventTime, { color: colors.textSecondary }]}>
+                    6:00 PM - 9:00 PM
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
 
-          <View style={[styles.socialSection, { backgroundColor: colors.cardBackground }]}>
+          {/* Weekly Specials */}
+          <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
+            <View style={styles.sectionHeader}>
+              <IconSymbol name="star.fill" size={24} color={colors.accent} />
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Weekly Specials
+              </Text>
+            </View>
+            <View style={styles.specialCard}>
+              <View style={styles.specialHeader}>
+                <Text style={[styles.specialDay, { color: colors.accent }]}>
+                  Monday
+                </Text>
+                <Text style={[styles.specialTitle, { color: colors.text }]}>
+                  Burger Night
+                </Text>
+              </View>
+              <Text style={[styles.specialDescription, { color: colors.textSecondary }]}>
+                All burgers 20% off with any drink purchase
+              </Text>
+            </View>
+            <View style={styles.specialCard}>
+              <View style={styles.specialHeader}>
+                <Text style={[styles.specialDay, { color: colors.accent }]}>
+                  Wednesday
+                </Text>
+                <Text style={[styles.specialTitle, { color: colors.text }]}>
+                  Wine Down Wednesday
+                </Text>
+              </View>
+              <Text style={[styles.specialDescription, { color: colors.textSecondary }]}>
+                Half price on all wines by the glass
+              </Text>
+            </View>
+            <View style={styles.specialCard}>
+              <View style={styles.specialHeader}>
+                <Text style={[styles.specialDay, { color: colors.accent }]}>
+                  Friday
+                </Text>
+                <Text style={[styles.specialTitle, { color: colors.text }]}>
+                  Fresh Catch Friday
+                </Text>
+              </View>
+              <Text style={[styles.specialDescription, { color: colors.textSecondary }]}>
+                Special seafood selections from local fishermen
+              </Text>
+            </View>
+          </View>
+
+          {/* Social Engagements */}
+          <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
             <View style={styles.sectionHeader}>
               <IconSymbol name="person.3.fill" size={24} color={colors.accent} />
               <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Follow Us
+                Social Engagements
               </Text>
             </View>
-            <Text style={[styles.socialText, { color: colors.textSecondary }]}>
-              Stay connected with us on social media for daily updates, special offers, and behind-the-scenes content!
+            <Text style={[styles.socialDescription, { color: colors.textSecondary }]}>
+              Follow us on social media to stay updated on all our events, 
+              special offers, and behind-the-scenes content!
             </Text>
             <View style={styles.socialButtons}>
-              <Pressable style={[styles.socialButton, { backgroundColor: colors.background }]}>
-                <Text style={[styles.socialButtonText, { color: colors.text }]}>
-                  📱 Instagram
+              <Pressable style={[styles.socialButton, { backgroundColor: colors.accent + '20' }]}>
+                <IconSymbol name="camera.fill" size={20} color={colors.accent} />
+                <Text style={[styles.socialButtonText, { color: colors.accent }]}>
+                  Instagram
                 </Text>
               </Pressable>
-              <Pressable style={[styles.socialButton, { backgroundColor: colors.background }]}>
-                <Text style={[styles.socialButtonText, { color: colors.text }]}>
-                  👍 Facebook
+              <Pressable style={[styles.socialButton, { backgroundColor: colors.accent + '20' }]}>
+                <IconSymbol name="f.square.fill" size={20} color={colors.accent} />
+                <Text style={[styles.socialButtonText, { color: colors.accent }]}>
+                  Facebook
                 </Text>
               </Pressable>
             </View>
@@ -165,90 +194,91 @@ const styles = StyleSheet.create({
   },
   headerButtonContainer: {
     padding: 6,
+    marginRight: 10,
   },
-  header: {
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    marginTop: 12,
-    marginBottom: 8,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  eventCard: {
+  section: {
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
-  },
-  eventHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    gap: 12,
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  eventHeaderText: {
-    flex: 1,
-  },
-  eventTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  eventDate: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  eventTime: {
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  eventDescription: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  rsvpButton: {
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  rsvpButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  socialSection: {
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 8,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
     gap: 8,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
   },
-  socialText: {
+  eventCard: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    gap: 12,
+  },
+  eventDate: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  eventDateDay: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  eventDateMonth: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  eventContent: {
+    flex: 1,
+  },
+  eventTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  eventDescription: {
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  eventMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  eventTime: {
+    fontSize: 13,
+  },
+  specialCard: {
+    marginBottom: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(128, 128, 128, 0.2)',
+  },
+  specialHeader: {
+    marginBottom: 8,
+  },
+  specialDay: {
+    fontSize: 14,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  specialTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  specialDescription: {
     fontSize: 14,
     lineHeight: 20,
+  },
+  socialDescription: {
+    fontSize: 15,
+    lineHeight: 22,
     marginBottom: 16,
   },
   socialButtons: {
@@ -257,9 +287,12 @@ const styles = StyleSheet.create({
   },
   socialButton: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: 12,
     borderRadius: 8,
-    alignItems: 'center',
+    gap: 8,
   },
   socialButtonText: {
     fontSize: 14,

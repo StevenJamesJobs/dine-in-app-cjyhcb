@@ -41,10 +41,13 @@ export default function MenuScreen() {
   const loadMenu = async () => {
     try {
       setLoading(true);
+      console.log('Loading menu for meal type:', mealType);
+      
+      // Fetch items that match the selected meal type OR are available for both
       const { data, error } = await supabase
         .from('menu_items')
         .select('*')
-        .or(`meal_type.eq.${mealType},meal_type.eq.both`)
+        .in('meal_type', [mealType, 'both'])
         .eq('is_available', true)
         .order('sort_order', { ascending: true });
 
@@ -52,6 +55,8 @@ export default function MenuScreen() {
         console.error('Error loading menu:', error);
         return;
       }
+
+      console.log('Loaded menu items:', data?.length);
 
       // Group items by category
       const sections: MenuSection[] = [];
@@ -88,6 +93,7 @@ export default function MenuScreen() {
         }
       });
 
+      console.log('Menu sections:', sections.length);
       setMenuSections(sections);
     } catch (error) {
       console.error('Error loading menu:', error);
@@ -252,6 +258,13 @@ export default function MenuScreen() {
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.accent} />
           </View>
+        ) : menuSections.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <IconSymbol name="fork.knife" size={48} color={colors.textSecondary} />
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+              No menu items available for {mealType}
+            </Text>
+          </View>
         ) : (
           <ScrollView
             style={styles.scrollView}
@@ -312,6 +325,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  emptyText: {
+    fontSize: 16,
+    marginTop: 16,
+    textAlign: 'center',
   },
   scrollView: {
     flex: 1,
