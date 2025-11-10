@@ -11,42 +11,100 @@ import {
   useColorScheme,
   Platform,
   Image,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/IconSymbol';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/button';
 import { restaurantColors } from '@/constants/Colors';
+import type { Database } from '@/app/integrations/supabase/types';
+
+type UserRole = Database['public']['Enums']['user_role'];
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [selectedRole, setSelectedRole] = useState<'customer' | 'employee'>('customer');
-  const { login, loginWithGoogle } = useAuth();
+  const [fullName, setFullName] = useState('');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('customer');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const { login, signUp, loginWithGoogle } = useAuth();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const colors = restaurantColors[selectedRole][isDark ? 'dark' : 'light'];
+  const colors = restaurantColors[selectedRole === 'manager' ? 'employee' : selectedRole][isDark ? 'dark' : 'light'];
 
   const handleLogin = async () => {
     if (!email || !password) {
-      console.log('Please fill in all fields');
+      Alert.alert('Error', 'Please fill in all fields');
       return;
     }
+
     try {
-      await login(email, password, selectedRole);
+      const { error } = await login(email, password);
+      
+      if (error) {
+        Alert.alert('Login Failed', error);
+        return;
+      }
+
       router.replace('/(tabs)/(home)/');
-    } catch (error) {
-      console.log('Login error:', error);
+    } catch (error: any) {
+      console.error('Login error:', error);
+      Alert.alert('Error', 'An unexpected error occurred');
+    }
+  };
+
+  const handleSignUp = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
+
+    try {
+      const { error } = await signUp(email, password, selectedRole, fullName);
+      
+      if (error) {
+        if (error.includes('verify your account')) {
+          Alert.alert(
+            'Verification Required',
+            'Please check your email to verify your account before logging in.',
+            [{ text: 'OK', onPress: () => setIsSignUp(false) }]
+          );
+        } else {
+          Alert.alert('Signup Failed', error);
+        }
+        return;
+      }
+
+      Alert.alert(
+        'Success',
+        'Account created successfully! You can now log in.',
+        [{ text: 'OK', onPress: () => setIsSignUp(false) }]
+      );
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      Alert.alert('Error', 'An unexpected error occurred');
     }
   };
 
   const handleGoogleLogin = async () => {
     try {
-      await loginWithGoogle(selectedRole);
-      router.replace('/(tabs)/(home)/');
-    } catch (error) {
-      console.log('Google login error:', error);
+      const { error } = await loginWithGoogle();
+      
+      if (error) {
+        Alert.alert('Google Login Failed', error);
+        return;
+      }
+
+      // OAuth will redirect automatically
+    } catch (error: any) {
+      console.error('Google login error:', error);
+      Alert.alert('Error', 'An unexpected error occurred');
     }
   };
 
@@ -70,10 +128,10 @@ export default function LoginScreen() {
 
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text }]}>
-            Welcome Back
+            {isSignUp ? 'Create Account' : 'Welcome Back'}
           </Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            Sign in to continue
+            {isSignUp ? 'Sign up to get started' : 'Sign in to continue'}
           </Text>
         </View>
 
@@ -133,11 +191,59 @@ export default function LoginScreen() {
                 Employee
               </Text>
             </Pressable>
+            <Pressable
+              style={[
+                styles.roleButton,
+                { backgroundColor: colors.cardBackground },
+                selectedRole === 'manager' && { 
+                  backgroundColor: colors.accent,
+                },
+              ]}
+              onPress={() => setSelectedRole('manager')}
+            >
+              <IconSymbol 
+                name="star.fill" 
+                size={24} 
+                color={selectedRole === 'manager' ? '#FFFFFF' : colors.text} 
+              />
+              <Text
+                style={[
+                  styles.roleButtonText,
+                  { color: colors.text },
+                  selectedRole === 'manager' && { color: '#FFFFFF' },
+                ]}
+              >
+                Manager
+              </Text>
+            </Pressable>
           </View>
         </View>
 
-        {/* Login Form */}
+        {/* Login/Signup Form */}
         <View style={styles.form}>
+          {isSignUp && (
+            <View style={styles.inputContainer}>
+              <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>
+                Full Name (Optional)
+              </Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  { 
+                    backgroundColor: colors.cardBackground,
+                    color: colors.text,
+                    borderColor: colors.accentGray,
+                  },
+                ]}
+                placeholder="John Doe"
+                placeholderTextColor={colors.textSecondary}
+                value={fullName}
+                onChangeText={setFullName}
+                autoCapitalize="words"
+              />
+            </View>
+          )}
+
           <View style={styles.inputContainer}>
             <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>
               Email
@@ -181,20 +287,13 @@ export default function LoginScreen() {
             />
           </View>
 
-          {selectedRole === 'employee' && (
-            <View style={[styles.managerHint, { backgroundColor: colors.cardBackground }]}>
-              <IconSymbol name="info.circle.fill" size={16} color={colors.accent} />
-              <Text style={[styles.managerHintText, { color: colors.textSecondary }]}>
-                Tip: Include &quot;manager&quot; in your email to access management features
-              </Text>
-            </View>
-          )}
-
           <Pressable
             style={[styles.loginButton, { backgroundColor: colors.accent }]}
-            onPress={handleLogin}
+            onPress={isSignUp ? handleSignUp : handleLogin}
           >
-            <Text style={styles.loginButtonText}>Sign In</Text>
+            <Text style={styles.loginButtonText}>
+              {isSignUp ? 'Sign Up' : 'Sign In'}
+            </Text>
           </Pressable>
 
           <View style={styles.divider}>
@@ -221,19 +320,21 @@ export default function LoginScreen() {
             </Text>
           </Pressable>
 
-          <Pressable style={styles.forgotPassword}>
-            <Text style={[styles.forgotPasswordText, { color: colors.accent }]}>
-              Forgot password?
-            </Text>
-          </Pressable>
+          {!isSignUp && (
+            <Pressable style={styles.forgotPassword}>
+              <Text style={[styles.forgotPasswordText, { color: colors.accent }]}>
+                Forgot password?
+              </Text>
+            </Pressable>
+          )}
 
           <View style={styles.signupContainer}>
             <Text style={[styles.signupText, { color: colors.textSecondary }]}>
-              Don&apos;t have an account?{' '}
+              {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
             </Text>
-            <Pressable>
+            <Pressable onPress={() => setIsSignUp(!isSignUp)}>
               <Text style={[styles.signupLink, { color: colors.accent }]}>
-                Sign up
+                {isSignUp ? 'Sign in' : 'Sign up'}
               </Text>
             </Pressable>
           </View>
@@ -299,7 +400,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   roleButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
   form: {
@@ -317,18 +418,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 14,
     fontSize: 16,
-  },
-  managerHint: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    padding: 12,
-    borderRadius: 8,
-  },
-  managerHintText: {
-    fontSize: 12,
-    flex: 1,
-    lineHeight: 16,
   },
   loginButton: {
     padding: 16,
